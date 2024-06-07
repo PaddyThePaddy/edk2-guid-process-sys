@@ -1,0 +1,3 @@
+[submodule "src/edk2/BrotliCompress/brotli"]
+	path = src/edk2/BrotliCompress/brotli
+	url = https://github.com/google/brotli
