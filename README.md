@@ -1,0 +1,2 @@
+[![Rust](https://github.com/PaddyThePaddy/edk2-guid-process-sys/actions/workflows/rust.yml/badge.svg)](https://github.com/PaddyThePaddy/edk2-guid-process-sys/actions/workflows/rust.yml)  
+Binding lib for guid processed section in EDK2 Firmware File System
