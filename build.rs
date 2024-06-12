@@ -15,6 +15,21 @@ fn main() {
     println!("cargo:rerun-if-changed=src{path_sep}edk2{path_sep}TianoCompress");
     println!("cargo:rerun-if-changed=src{path_sep}edk2{path_sep}BrotliCompress");
     println!("cargo:rerun-if-changed=src{path_sep}edk2{path_sep}GenCrc32");
+    let brotli_submodule_path = PathBuf::from("src")
+        .join("edk2")
+        .join("BrotliCompress")
+        .join("brotli");
+    if match std::fs::read_dir(&brotli_submodule_path) {
+        Err(_) => true,
+        Ok(mut walk) => walk.next().is_none(),
+    } {
+        assert!(std::process::Command::new("git")
+            .args(["submodule", "update", "--init", "--recursive"])
+            .arg(brotli_submodule_path.as_os_str())
+            .status()
+            .expect("Executing git submodule update")
+            .success());
+    }
 
     let mut lzma_build = cc::Build::new();
     lzma_build
