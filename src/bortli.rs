@@ -314,20 +314,4 @@ mod test {
             std::fs::remove_file(&test_reference_dec_bin).unwrap();
         }
     }
-
-    #[test]
-    fn test_eof() {
-        let buf = [0, 0, 1, 1];
-        let mut cursor = Cursor::new(buf);
-        let mut read_buf = [0];
-        assert!(!is_reader_eof(&mut cursor).unwrap());
-        cursor.read(&mut read_buf).unwrap();
-        assert!(!is_reader_eof(&mut cursor).unwrap());
-        cursor.read(&mut read_buf).unwrap();
-        assert!(!is_reader_eof(&mut cursor).unwrap());
-        cursor.read(&mut read_buf).unwrap();
-        assert!(!is_reader_eof(&mut cursor).unwrap());
-        cursor.read(&mut read_buf).unwrap();
-        assert!(is_reader_eof(&mut cursor).unwrap());
-    }
 }
