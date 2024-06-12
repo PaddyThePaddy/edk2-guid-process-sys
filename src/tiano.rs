@@ -117,6 +117,11 @@ pub fn tiano_enc(src: &[u8]) -> Result<Vec<u8>, usize> {
 mod tests {
     use super::*;
 
+    #[cfg(target_os = "windows")]
+    const TOOL_NAME: &str = "TianoCompress.exe";
+    #[cfg(not(target_os = "windows"))]
+    const TOOL_NAME: &str = "TianoCompress";
+
     #[test]
     fn test_efi() {
         let test_path = std::env::current_dir().unwrap().join("test");
@@ -129,18 +134,16 @@ mod tests {
 
         let test_src = crate::test::get_test_file();
 
-        assert!(
-            std::process::Command::new(test_path.join("TianoCompress.exe"))
-                .arg("-e")
-                .arg(test_src.path().as_os_str())
-                .arg("-o")
-                .arg(test_reference_bin.as_os_str())
-                .arg("--uefi")
-                .current_dir(test_path.as_os_str())
-                .status()
-                .unwrap()
-                .success()
-        );
+        assert!(std::process::Command::new(test_path.join(TOOL_NAME))
+            .arg("-e")
+            .arg(test_src.path().as_os_str())
+            .arg("-o")
+            .arg(test_reference_bin.as_os_str())
+            .arg("--uefi")
+            .current_dir(test_path.as_os_str())
+            .status()
+            .unwrap()
+            .success());
         let compressed = efi_enc(test_src.slice()).unwrap();
 
         let reference_buf = std::fs::read(test_path.join(&test_reference_bin)).unwrap();
@@ -168,17 +171,15 @@ mod tests {
 
         let test_src = crate::test::get_test_file();
 
-        assert!(
-            std::process::Command::new(test_path.join("TianoCompress.exe"))
-                .arg("-e")
-                .arg(test_src.path().as_os_str())
-                .arg("-o")
-                .arg(test_reference_bin.as_os_str())
-                .current_dir(test_path.as_os_str())
-                .status()
-                .unwrap()
-                .success()
-        );
+        assert!(std::process::Command::new(test_path.join(TOOL_NAME))
+            .arg("-e")
+            .arg(test_src.path().as_os_str())
+            .arg("-o")
+            .arg(test_reference_bin.as_os_str())
+            .current_dir(test_path.as_os_str())
+            .status()
+            .unwrap()
+            .success());
         let compressed = tiano_enc(test_src.slice()).unwrap();
 
         let reference_buf = std::fs::read(test_path.join(&test_reference_bin)).unwrap();

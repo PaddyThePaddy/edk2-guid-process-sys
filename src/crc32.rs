@@ -48,9 +48,14 @@ pub fn crc32_dec(buf: &[u8]) -> Result<Vec<u8>, crate::Error> {
 mod test {
     use super::*;
 
+    #[cfg(target_os = "windows")]
+    const TOOL_NAME: &str = "GenCrc32.exe";
+    #[cfg(not(target_os = "windows"))]
+    const TOOL_NAME: &str = "GenCrc32";
+
     #[test]
     fn test_get_crc32() {
-        let src_buf = std::fs::read("test/GenCrc32.exe").unwrap();
+        let src_buf = std::fs::read(crate::test::get_test_file().path()).unwrap();
         assert_eq!(edk2_get_crc32(&src_buf).unwrap(), crc32fast::hash(&src_buf));
     }
 
@@ -66,7 +71,7 @@ mod test {
 
         let test_src = crate::test::get_test_file();
 
-        assert!(std::process::Command::new(test_path.join("GenCrc32.exe"))
+        assert!(std::process::Command::new(test_path.join(TOOL_NAME))
             .arg("-e")
             .arg(test_src.path().as_os_str())
             .arg("-o")

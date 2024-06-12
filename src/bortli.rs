@@ -233,7 +233,7 @@ fn brotli_dec_worker(
                     return Err(crate::Error::UnexpectedEndOfBuffer);
                 }
             } else {
-                return Err(crate::Error::I32(result));
+                return Err(crate::Error::I32(result as i32));
             }
 
             if is_reader_eof(&mut in_reader)?
@@ -262,6 +262,11 @@ fn is_reader_eof(reader: &mut impl BufRead) -> std::io::Result<bool> {
 mod test {
     use super::*;
 
+    #[cfg(target_os = "windows")]
+    const TOOL_NAME: &str = "BrotliCompress.exe";
+    #[cfg(not(target_os = "windows"))]
+    const TOOL_NAME: &str = "BrotliCompress";
+
     /// Due to bortli_enc does not produce the same result with BortliCompress.exe
     /// So the goal of this test is to make sure the produced compress data
     /// can be decompressed with BortliCompress.exe
@@ -284,17 +289,15 @@ mod test {
 
         let compressed = brotli_enc(test_src.slice()).unwrap();
         std::fs::write(&test_reference_bin, &compressed).unwrap();
-        assert!(
-            std::process::Command::new(test_path.join("BrotliCompress.exe"))
-                .arg("-d")
-                .arg(test_reference_bin.as_os_str())
-                .arg("-o")
-                .arg(test_reference_dec_bin.as_os_str())
-                .current_dir(test_path.as_os_str())
-                .status()
-                .unwrap()
-                .success()
-        );
+        assert!(std::process::Command::new(test_path.join(TOOL_NAME))
+            .arg("-d")
+            .arg(test_reference_bin.as_os_str())
+            .arg("-o")
+            .arg(test_reference_dec_bin.as_os_str())
+            .current_dir(test_path.as_os_str())
+            .status()
+            .unwrap()
+            .success());
 
         let decompressed = brotli_dec(&compressed).unwrap();
         assert_eq!(test_src.slice().len(), decompressed.len());

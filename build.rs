@@ -16,22 +16,30 @@ fn main() {
     println!("cargo:rerun-if-changed=src{path_sep}edk2{path_sep}BrotliCompress");
     println!("cargo:rerun-if-changed=src{path_sep}edk2{path_sep}GenCrc32");
 
-    cc::Build::new()
+    let mut lzma_build = cc::Build::new();
+    lzma_build
         .file("src/edk2/LzmaCompress/Sdk/C/7zFile.c")
         .file("src/edk2/LzmaCompress/Sdk/C/7zStream.c")
         .file("src/edk2/LzmaCompress/Sdk/C/Alloc.c")
         .file("src/edk2/LzmaCompress/Sdk/C/Bra86.c")
         .file("src/edk2/LzmaCompress/Sdk/C/LzFind.c")
-        .file("src/edk2/LzmaCompress/Sdk/C/LzFindMt.c")
         .file("src/edk2/LzmaCompress/Sdk/C/LzmaDec.c")
         .file("src/edk2/LzmaCompress/Sdk/C/LzmaEnc.c")
-        .file("src/edk2/LzmaCompress/Sdk/C/Threads.c")
         .file("src/edk2/Common/CommonLib.c")
         .file("src/edk2/Common/EfiUtilityMsgs.c")
         .flag("-Isrc/edk2/Common")
         .flag("-Isrc/edk2/Include/X64")
-        .flag("-Isrc/edk2/Include")
-        .compile("lzmacompress");
+        .flag("-Isrc/edk2/Include");
+
+    if std::env::consts::OS == "windows" {
+        lzma_build
+            .file("src/edk2/LzmaCompress/Sdk/C/Threads.c")
+            .file("src/edk2/LzmaCompress/Sdk/C/LzFindMt.c");
+    } else {
+        lzma_build.flag("-D_7ZIP_ST");
+    }
+
+    lzma_build.compile("lzmacompress");
 
     cc::Build::new()
         .file("src/edk2/TianoCompress/TianoCompress.c")

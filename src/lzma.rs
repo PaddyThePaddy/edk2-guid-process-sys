@@ -91,6 +91,11 @@ pub fn lzma_enc(src: &[u8], f86: bool) -> Result<Vec<u8>, i32> {
 mod tests {
     use super::*;
 
+    #[cfg(target_os = "windows")]
+    const TOOL_NAME: &str = "LzmaCompress.exe";
+    #[cfg(not(target_os = "windows"))]
+    const TOOL_NAME: &str = "LzmaCompress";
+
     #[test]
     fn test_lzma() {
         let test_path = std::env::current_dir().unwrap().join("test");
@@ -103,17 +108,15 @@ mod tests {
 
         let test_src = crate::test::get_test_file();
 
-        assert!(
-            std::process::Command::new(test_path.join("LzmaCompress.exe"))
-                .arg("-e")
-                .arg(test_src.path().as_os_str())
-                .arg("-o")
-                .arg(test_reference_bin.as_os_str())
-                .current_dir(test_path.as_os_str())
-                .status()
-                .unwrap()
-                .success()
-        );
+        assert!(std::process::Command::new(test_path.join(TOOL_NAME))
+            .arg("-e")
+            .arg(test_src.path().as_os_str())
+            .arg("-o")
+            .arg(test_reference_bin.as_os_str())
+            .current_dir(test_path.as_os_str())
+            .status()
+            .unwrap()
+            .success());
         let compressed = lzma_enc(test_src.slice(), false).unwrap();
 
         let reference_buf = std::fs::read(test_path.join(&test_reference_bin)).unwrap();
@@ -141,18 +144,16 @@ mod tests {
 
         let test_src = crate::test::get_test_file();
 
-        assert!(
-            std::process::Command::new(test_path.join("LzmaCompress.exe"))
-                .arg("-e")
-                .arg(test_src.path().as_os_str())
-                .arg("-o")
-                .arg(test_reference_bin.as_os_str())
-                .arg("--f86")
-                .current_dir(test_path.as_os_str())
-                .status()
-                .unwrap()
-                .success()
-        );
+        assert!(std::process::Command::new(test_path.join(TOOL_NAME))
+            .arg("-e")
+            .arg(test_src.path().as_os_str())
+            .arg("-o")
+            .arg(test_reference_bin.as_os_str())
+            .arg("--f86")
+            .current_dir(test_path.as_os_str())
+            .status()
+            .unwrap()
+            .success());
         let compressed = lzma_enc(test_src.slice(), true).unwrap();
 
         let reference_buf = std::fs::read(test_path.join(&test_reference_bin)).unwrap();
